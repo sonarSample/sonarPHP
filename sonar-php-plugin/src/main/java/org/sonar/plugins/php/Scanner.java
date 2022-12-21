@@ -60,7 +60,8 @@ abstract class Scanner {
     LOG.info("Starting " + this.name());
     List<String> filenames = files.stream().map(InputFile::toString).collect(Collectors.toList());
     progressReport.start(filenames);
-
+    LOG.info("Filenames: ");
+    filenames.forEach(f -> LOG.info("f: " + f));
     boolean success = false;
     try {
       for (InputFile file : files) {

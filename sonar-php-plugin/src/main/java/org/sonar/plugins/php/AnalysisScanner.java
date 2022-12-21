@@ -142,6 +142,11 @@ class AnalysisScanner extends Scanner {
     if (fileCanBeSkipped(inputFile)
       && scanFileWithoutParsing(inputFile, cpdVisitor)) {
 
+      if (!inSonarLint(context)) {
+        phpAnalyzer.nextFile(inputFile);
+        saveSyntaxHighlighting(inputFile);
+        saveSymbolHighlighting(inputFile);
+      }
       saveCpdData(inputFile, cpdVisitor.getCpdTokens());
       return;
     }
@@ -192,11 +197,20 @@ class AnalysisScanner extends Scanner {
 
   private void saveCpdData(InputFile inputFile, List<CpdVisitor.CpdToken> cpdTokens) {
     NewCpdTokens newCpdTokens = context.newCpdTokens().onFile(inputFile);
+    if (inputFile.filename().equals("wp-signup.php")) {
+      cpdTokens.forEach(cpdToken -> {
+        TextRange textRange = inputFile.newRange(cpdToken.line(),
+          cpdToken.column(),
+          cpdToken.endLine(),
+          cpdToken.endColumn());
+        LOG.info("Filename: wp-signup.php cpdToken " + cpdToken + "new range: " + textRange);
+      });
+    }
     cpdTokens.forEach(cpdToken -> newCpdTokens.addToken(
-      cpdToken.line(),
-      cpdToken.column(),
-      cpdToken.endLine(),
-      cpdToken.endColumn(),
+      inputFile.newRange(cpdToken.line(),
+        cpdToken.column(),
+        cpdToken.endLine(),
+        cpdToken.endColumn()),
       cpdToken.text()));
 
     newCpdTokens.save();
